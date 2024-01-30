@@ -16,6 +16,8 @@
 ±±ºUso       ³ Específico PIC                                             º±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 
+//teste de mensagem git versão 2.0//
+
 //---------------------------------------------------------------------------------------------------------------------------------*
 User Function xEtiqFraEO(_cCodProd,_cOrigem,_nQuant,_cLoteFb,_dDataFb,_cCAS,cNomFabr,_dDtFrac,_nTara,_cLoteIn,_dValidade,_cDCB,_cDCI, cFornec,cLojafo,cPais,_cOpfraceo, _lGrava)
 //---------------------------------------------------------------------------------------------------------------------------------*

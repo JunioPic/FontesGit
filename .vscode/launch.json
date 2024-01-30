@@ -12,11 +12,14 @@
 			"enableTableSync": true
 		}
 	],
-	"lastProgramExecuted": "SIGAEST",
+	"lastProgramExecuted": "sigacom",
 	"lastProgramArguments": [],
 	"lastPrograms": [
 		{
 			"label": "SIGAEST"
+		},
+		{
+			"label": "sigacom"
 		}
 	]
 }
