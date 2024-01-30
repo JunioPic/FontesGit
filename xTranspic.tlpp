@@ -1,0 +1,198 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOPCONN.CH"
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TBICONN.CH"
+
+
+User Function xTranspic()
+
+  Local cFontUti    := "Tahoma"
+  Local oFontSubN   := TFont():New(cFontUti,,-20,,.T.)
+  Local oFontBtn    := TFont():New(cFontUti,,-10)
+  Local oFontCbx    := TFont():New(cFontUti,,-15,,.T.)
+
+  Local oDlg
+  Local oGet, oGet1
+  Local oSay, oSay1, oSay2
+  Local cNotaini := space(9)
+  Local cNotafim := space(9)
+  //Local cNota := Space(6)
+  //Local nVol := 0
+  Local aItems:= {'VALIDADE','RETESTE'}
+
+
+DEFINE MSDIALOG oDlg TITLE "Etiquetas Transporte Pic" FROM 000, 000 TO 300, 450 COLORS 0, 16777215 PIXEL
+
+@ 005, 050 SAY oSay PROMPT "DADOS ETQ. TRANSPORTE" SIZE 300, 020 FONT oFontSubN OF oDlg COLORS 0, 16777215 PIXEL
+@ 030, 015 SAY oSay1 PROMPT "Nota Inicial:"    SIZE 040, 010 FONT oFontBtn OF oDlg COLORS 0, 16777215 PIXEL
+@ 030, 120 SAY oSay2 PROMPT "Nota Final:"      SIZE 040, 010 FONT oFontBtn OF oDlg COLORS 0, 16777215 PIXEL
+@ 025, 045 Get oGet  Var cNotaini              SIZE 60,15 OF oDlg PIXEL 
+@ 025, 150 Get oGet1 Var cNotafim              SIZE 60,15 OF oDlg PIXEL 
+
+@ 060, 090 SAY oSay2 PROMPT "Tipo Validade:"    SIZE 060, 020 FONT oFontCbx OF oDlg COLORS 0, 16777215 PIXEL
+ cCombo1:= aItems[1]
+ oCombo1 := TComboBox():New(075,070,{|u|if(PCount()>0,cCombo1:=u,cCombo1)}, aItems,100,20,oDlg,,,,,,.T.,,,,,,,,,'cCombo1')
+
+@ 120, 050 BUTTON oFontBtn  PROMPT "Imprimir" SIZE 037, 012 OF oDlg PIXEL Action (xNetq(cNotaini, cNotafim, cCombo1))
+@ 120, 140 BUTTON oFontBtn  PROMPT "Fechar"   SIZE 037, 012 OF oDlg PIXEL Action oDlg:End()
+
+
+ACTIVATE MSDIALOG oDlg CENTERED
+   
+Return 
+
+Static Function xNetq(cNotaini, cNotafim, cCombo1)
+	
+	  Local cQuery := ""
+    Local cNFini := ALLTRIM(cNotaini)
+    Local cNFfim := ALLTRIM(cNotafim)
+    Local nVol1 := 0
+    Local cFarm := GetMV('MV_XFARMCR')
+
+    Local cPorta := "LPT1" // Mapeamento feito através de NET USE
+    Local cModelo := "Z4M"
+    Local cRot    := "R"
+    Local cFonte := "B"
+
+ 
+ cQuery := " SELECT DISTINCT " + CRLF
+ cQuery += " SD2.D2_ITEM                                            AS ITEM, "       + CRLF
+ cQuery += " SD2.D2_DOC                                             AS NOTA, "       + CRLF
+ cQuery += " SA1.A1_NOME                                            AS CLIENTE, "    + CRLF
+ cQuery += " CONCAT(RTRIM(SB1.B1_COD), ' - ', SB1.B1_DESC)          AS PRODUTO, "    + CRLF
+ cQuery += " SB1.B1_FABRIC                                          AS FABRICANTE,"  + CRLF
+ cQuery += " CAST(SB5.B5_QE1 AS NUMERIC(15,3))                      AS PESOL,"       + CRLF
+ cQuery += " (SB5.B5_QE1 * CAST(SB1.B1_PESBRU AS NUMERIC(15,3)))    AS PESOB,"       + CRLF
+ cQuery += " SD2.D2_LOTECTL                                         AS LOTE,"        + CRLF
+ cQuery += " SB8.B8_DFABRIC                                         AS FABRICACAO,"  + CRLF
+ cQuery += " SD2.D2_DTVALID                                         AS VALIDADE,"    + CRLF
+ cQuery += " SC6.C6_PEDCLI                                          AS PEDCLIENTE, " + CRLF
+ cQuery += " SC6.C6_NUMPCOM                                         AS PEDCOMP, "    + CRLF
+ cQuery += " SA1.A1_COD                                             AS A1CODCLI, "   + CRLF
+ cQuery += " SA1.A1_LOJA                                            AS A1LOJCLI, "   + CRLF
+ cQuery += " SB1.B1_COD                                             AS B1PRODUT, "   + CRLF
+ cQuery += " SC6.C6_NUMPCOM                                         AS PEDCOMP, "    + CRLF
+ cQuery += " SD2.D2_QUANT / SB5.B5_QE1                              AS VOLUME  "     + CRLF
+ cQuery += " FROM " +RetSqlName("SD2")+ " SD2(NOLOCK), "   + CRLF
+ cQuery += "      " +RetSqlName("SA1")+ " SA1(NOLOCK), "   + CRLF
+ cQuery += "      " +RetSqlName("SB1")+ " SB1(NOLOCK), "   + CRLF
+ cQuery += "      " +RetSqlName("SB8")+ " SB8(NOLOCK), "   + CRLF
+ cQuery += "      " +RetSqlName("SB5")+ " SB5(NOLOCK), "   + CRLF
+ cQuery += "      " +RetSqlName("SF2")+ " SF2(NOLOCK), "   + CRLF
+ cQuery += "      " +RetSqlName("SC6")+ " SC6(NOLOCK)  "   + CRLF
+ cQuery += " WHERE SD2.D2_DOC BETWEEN '"+ cNFini + "' AND '" + cNFfim + "' " + CRLF
+ cQuery += "  AND SC6.C6_OPER IN ('01', '02', '03') "        + CRLF
+ cQuery += " AND SB5.B5_QE1 > 0 "                            + CRLF
+ cQuery += " AND SB8.B8_LOCAL = '01' "                      + CRLF
+ cQuery += " AND SD2.D2_FILIAL = '" + xFilial ("SD2") + "'" + CRLF
+ cQuery += " AND SB1.B1_FILIAL = '" + xFilial ("SB1") + "'" + CRLF
+ cQuery += " AND SB8.B8_FILIAL = '" + xFilial ("SB8") + "'" + CRLF
+ cQuery += " AND SB5.B5_FILIAL = '" + xFilial ("SB5") + "'" + CRLF
+ cQuery += " AND SC6.C6_FILIAL = '" + xFilial ("SC6") + "'" + CRLF
+ cQuery += " AND SA1.A1_COD = SD2.D2_CLIENTE              " + CRLF
+ cQuery += " AND SB1.B1_COD = SD2.D2_COD                  " + CRLF
+ cQuery += " AND SB8.B8_LOTECTL = SD2.D2_LOTECTL          " + CRLF
+ cQuery += " AND SB5.B5_COD = SB1.B1_COD                  " + CRLF
+ cQuery += " AND SF2.F2_DOC = SD2.D2_DOC                  " + CRLF
+ cQuery += " AND SC6.C6_NOTA = SD2.D2_DOC                 " + CRLF
+ cQuery += " AND SD2.D_E_L_E_T_ = ''                      " + CRLF
+ cQuery += " AND SA1.D_E_L_E_T_ = ''                      " + CRLF
+ cQuery += " AND SB1.D_E_L_E_T_ = ''                      " + CRLF
+ cQuery += " AND SB8.D_E_L_E_T_ = ''                      " + CRLF
+ cQuery += " AND SB5.D_E_L_E_T_ = ''                      " + CRLF
+ cQuery += " AND SF2.D_E_L_E_T_ = ''                      " + CRLF
+ cQuery += " AND SC6.D_E_L_E_T_ = ''                      " + CRLF
+ cQuery += " ORDER BY SD2.D2_DOC                          " + CRLF                       
+
+  If Select("ETQ") > 0
+        Dbselectarea("ETQ")
+        ETQ->(DbClosearea()) 
+  EndIf
+    
+    TcQuery cQuery New Alias "ETQ"
+ 
+
+SA7->(DbSetorder(1))
+  While ETQ->(!EOF())
+   //Variaveis para etiqueta que vem da query
+  
+   _dTFabric := STOD(ETQ->FABRICACAO)
+   _dValid   := STOD(ETQ->VALIDADE)
+   _nVol  := ETQ->VOLUME
+
+   For nVol1 := 1 To _nVol
+   
+   //IMPRESSÃO ETIQUETA AUTOMATICA
+  MSCBPRINTER(cModelo, cPorta,,,.F.,,,,,,.F.,)
+  MSCBCHKSTATUS(.F.)
+
+//Quantidade de etiquetas a serem impressa e tamanho da etiqueta(largura)
+
+  MSCBBEGIN(1,5)
+  //nLin1 := 28
+  nLin  := 75
+
+//String a ser impressa na etiqueta
+
+  //nLin += 07
+  MSCBSAY(nLin,010,"NF:",                                           cRot,cFonte,"40,20")
+  MSCBSAY(nLin,025,ALLTRIM(ETQ->NOTA),                              cRot,cFonte,"40,20")
+  MSCBSAY(nLin,100,"VOLUMES:",                                      cRot,cFonte,"40,20")
+  MSCBSAY(nLin,130, + CValToChar(nVol1) + '/' + CValToChar(_nVol),  cRot,cFonte,"40,20")
+  
+  nLin -= 10
+  MSCBSAY(nLin,010,"CLIENTE: ",            cRot,cFonte,"50,20")
+  MSCBSAY(nLin,040, ALLTRIM(SUBSTR(ETQ->CLIENTE,1,50)), cRot,cFonte,"50,20")
+  
+  nLin -= 10
+  MSCBSAY(nLin,010,"PRODUTO: ",           cRot,cFonte,"50,20")
+  MSCBSAY(nLin,040,ALLTRIM(SUBSTR(ETQ->PRODUTO,1,50)), cRot,cFonte,"50,20")
+
+  nLin -= 10
+  MSCBSAY(nLin,010,"FABRICANTE: ",           cRot,cFonte,"50,20")
+  MSCBSAY(nLin,055,ALLTRIM(ETQ->FABRICANTE), cRot,cFonte,"50,20")
+  
+  nLin -= 10
+  MSCBSAY(nLin,010,"PESO LIQ.: "                            ,cRot,cFonte,"50,20")
+  MSCBSAY(nLin,050,+TRANSFORM(ETQ->PESOL, "@E 999,999.999") ,cRot,cFonte,"50,20")
+  MSCBSAY(nLin,100,"PESO BRT.: "                            ,cRot,cFonte,"50,20")
+  MSCBSAY(nLin,140,+TRANSFORM(ETQ->PESOB, "@E 999,999.999") ,cRot,cFonte,"50,20")
+  
+  nLin -= 10
+  MSCBSAY(nLin,010,"LOTE: ",                 cRot,cFonte,"50,20")
+  MSCBSAY(nLin,030,ALLTRIM(ETQ->LOTE) ,      cRot,cFonte,"50,20")
+  
+  If(SA7->(DbSeek(xFilial("SA7") + ETQ->A1CODCLI + ETQ->A1LOJCLI + ETQ->B1PRODUT)))
+  
+    MSCBSAY(nLin,100,"PROD CLI.: "                            ,cRot,cFonte,"50,20")
+    MSCBSAY(nLin,140,ALLTRIM(SA7->A7_CODCLI)                  ,cRot,cFonte,"50,20")
+
+  Endif 
+    
+  nLin -= 10
+  MSCBSAY(nLin,010,"FABRICACAO: ",           cRot,cFonte,"50,20")
+  MSCBSAY(nLin,050,+CValToChar(_dTFabric),   cRot,cFonte,"50,20")
+ iF cCombo1 == "RETESTE"
+  MSCBSAY(nLin,100,"RETEST DATE: ",         cRot,cFonte,"50,20")
+  MSCBSAY(nLin,145,+CValToChar(_dValid) ,   cRot,cFonte,"50,20")
+ Else
+  MSCBSAY(nLin,100,"VALIDADE: ",            cRot,cFonte,"50,20")
+  MSCBSAY(nLin,135,+CValToChar(_dValid) ,   cRot,cFonte,"50,20")
+ EndIf
+  nLin -= 10
+  MSCBSAY(nLin,030,"Farm. Resp.: ",           cRot,cFonte,"20,20")
+  MSCBSAY(nLin,070,cFarm,                     cRot,cFonte,"20,20")
+
+  MSCBInfoEti("Etq Pic", "11x21")
+
+//Finalização da etiqueta
+  MSCBEND()
+
+//Impressão
+  MSCBCLOSEPRINTER()
+  
+ Next nVol1
+  ETQ->(Dbskip())
+ EndDo
+    
+Return
