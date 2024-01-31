@@ -463,11 +463,11 @@ Static Function xRodpe( _nFretcif,_nFretfob, _nFreteout)
       oPrinter:Say(nLin, 030, cMensg03,     oFont10T)
       nLin += 10
       oPrinter:Say(nLin, 030, cMensg04,     oFont10T)
+      xNewPag()
       nLin += 10
       oPrinter:Say(nLin, 030, cMensg05,     oFont10T)
       nLin += 10
       oPrinter:Say(nLin, 030, cMensg06,     oFont10T)
-      xNewPag()
       nLin += 10
       oPrinter:Say(nLin, 030, cMensg07,     oFont10T)
        nLin += 10
@@ -476,11 +476,11 @@ Return
 
 Static Function xNewPag()
 
- iF nLin >= nLinF
+ iF nLin >= nLinF - 20
          oPrinter:EndPage()
          oPrinter:StartPage()
          oPrinter:Box (030, 015, 595, 825)
-         nLin := 30 
+         nLin := 35
       nNext += 1 
          oPrinter:Say(020,  735, "PAG:",                          oFont07F)
          oPrinter:Say(020,  750, +TRANSFORM(nNext, '@e 999'),     oFont07F)
