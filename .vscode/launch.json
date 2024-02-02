@@ -7,12 +7,12 @@
 			"name": "Depuração do idioma TOTVS",
 			"program": "${command:AskForProgramName}",
 			"cwb": "${workspaceFolder}",
-			"smartclientBin": "C:/TOTVS_33/Protheus/bin/smartclient/smartclient.exe",
+			"smartclientBin": "C:/smart_pic-dev/smartclient.exe",
 			"isMultiSession": true,
 			"enableTableSync": true
 		}
 	],
-	"lastProgramExecuted": "sigacom",
+	"lastProgramExecuted": "SIGAEIC",
 	"lastProgramArguments": [],
 	"lastPrograms": [
 		{
@@ -20,6 +20,9 @@
 		},
 		{
 			"label": "sigacom"
+		},
+		{
+			"label": "SIGAEIC"
 		}
 	]
 }
