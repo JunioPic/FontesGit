@@ -18,6 +18,7 @@ user function RelComp()
     Private cMensg06 := GETMV("MV_MSCOM06")
     Private cMensg07 := GETMV("MV_MSCOM07")
     Private cMensg08 := GETMV("MV_MSCOM08")
+    Private cMensg09 := GETMV("MV_MSCOM09")
    
     
     Private nTotal   := 0
@@ -472,6 +473,8 @@ Static Function xRodpe( _nFretcif,_nFretfob, _nFreteout)
       oPrinter:Say(nLin, 030, cMensg07,     oFont10T)
        nLin += 10
       oPrinter:Say(nLin, 030, cMensg08,     oFont10T)
+       nLin += 10
+      oPrinter:Say(nLin, 030, cMensg09,     oFont10T)
 Return
 
 Static Function xNewPag()
