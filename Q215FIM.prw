@@ -143,27 +143,8 @@ If FunName() $ 'MATA410/MATA650' 		//Type('_cQEKPrd') == 'C'
 		   _cQEKLote := SD2->D2_LOTECTL
 		   _cNFisc   := SD2->D2_DOC
 		   _cCli     := SA1->A1_NOME
-		   _cTipo    := SD2->D2_TP
-		    
-		  If _cTipo == "MP" //ALTERAÇÃO PARA GERAR LAUDO DA EMBALAGEM ORIGINAL DATA DA ALTERAÇÃO 22/03/2024 POR JUNIOR GUERREIRO
-		    _cQryU:=" SELECT D4_COD, D4_LOTECTL "+ENTER
-			_cQryU+=" FROM "+RetSqlName('SD4')+" SD4  "+ENTER
-			_cQryU+=" INNER JOIN "+RetSqlName('SB1')+" SB1 ON SB1.D_E_L_E_T_=''   AND B1_FILIAL='"+xFilial('SB1')+"' AND B1_COD=D4_COD AND B1_DESC LIKE '%EO%' "+ENTER
-			_cQryU+=" INNER JOIN "+RetSqlName('SD3')+" SD3 ON SD3.D_E_L_E_T_='' AND D3_FILIAL='"+xFilial('SD3')+"' AND D3_LOTECTL='"+SD2->D2_LOTECTL+"' AND D3_COD='"+SD2->D2_COD+"' "+ENTER
-			_cQryU+=" WHERE SD4.D_E_L_E_T_= ' '  "+ENTER
-			_cQryU+=" AND D4_FILIAL='"+xFilial('SD4')+"' "+ENTER
-			_cQryU+=" AND D4_OP=D3_OP "+ENTER
-			If Select("_LST") > 0   	
-				_LST->(DbCloseArea())
-			EndIf
-			DbUseArea(.T.,"TOPCONN",TCGENQRY(,,_cQryU),"_LST",.F.,.T.)
-			DbSelectArea("_LST")
-			_LST->(DbGotop())
-			IF !Empty(_LST->D4_COD)
-				 _cProdOri:=_LST->D4_COD
-				 _cLoteOri:=_LST->D4_LOTECTL
-			EndIF
-		  else
+
+		   //ALTERAÇÃO PARA GERAR LAUDO DAS EMBALAGENS FRACIONADAS E ORIGINAIS (EO) DATA 01/04/2023
 		    _cQryU:=" SELECT DISTINCT D3_COD, D3_LOTECTL "+ENTER
 			_cQryU+=" FROM "+RetSqlName('SD3')+" SD3  "+ENTER
 			_cQryU+=" INNER JOIN "+RetSqlName('SB1')+" SB1 ON SB1.D_E_L_E_T_=''   AND B1_FILIAL='"+xFilial('SB1')+"' AND B1_COD=D3_COD "+ENTER
@@ -181,7 +162,6 @@ If FunName() $ 'MATA410/MATA650' 		//Type('_cQEKPrd') == 'C'
 				 _cProdOri:=_LST->D3_COD
 				 _cLoteOri:=_LST->D3_LOTECTL
 			EndIF
-		  EndIF 	
 			If FunName() == 'MATA650' 
 			   _cQuery := "Select Distinct QEK.R_E_C_N_O_ QEK_REC"
 			   _cQuery += "	From "+RetSqlName('QEK')+" QEK, "+RetSqlName('SD7')+" SD7 "
