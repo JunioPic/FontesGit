@@ -39,7 +39,7 @@ Return(_lLib)
 ±±ºUso       ³ PIC/Pharmaspecial                                          º±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/         
 *----------------------*
-User Function xGatPrdPrc
+User Function xGatPrdPrc()
 *----------------------*
 Local aArea      := GetArea() 
 Local aArDA1     := DA1->(GetArea()) 
