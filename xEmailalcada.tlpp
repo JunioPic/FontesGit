@@ -1,0 +1,108 @@
+#include "TOTVS.CH"
+#INCLUDE "RWMAKE.CH"
+#INCLUDE "TOPCONN.CH"
+#include "ap5mail.ch" 
+
+user function xEmailalcada(cNumPC)
+
+
+local oServer  := Nil
+local oMessage := Nil
+local nErr     := 0
+local _cNumPC  := cNumPC
+
+local cSMTPAddr := GetMV("MV_XENSMTP")           // Endereco do servidor SMTP
+local cSMTPPort := GetMV("MV_XPORTA")            // Porta do servidor SMTP
+local cUser     := GetMV("MV_XEMFROM")           // Usuario que ira realizar a autenticacao
+local cDest     := GetMV("MV_XENDEST")           // Email de destrino
+local cPass     := GetMV("MV_XSENHA")            // Senha do usuario
+local nSMTPTime := 60                     // Timeout SMTP
+Local cRemoteip         :=  Getclientip()
+Local cRemoteComputer   :=  GetComputerName()
+             
+// Instancia um novo TMailManager
+oServer := tMailManager():New()    
+
+// Usa SSL na conexao
+oServer:setUseSSL(.T.)
+oServer:SetUseTLS(.T.)
+
+// Inicializa
+oServer:init("", cSMTPAddr, cUser, cPass, , cSMTPPort)
+
+// Define o Timeout SMTP
+if oServer:SetSMTPTimeout(nSMTPTime) != 0
+  conout("[ERROR]Falha ao definir timeout")
+  return .F.
+endif
+
+// Conecta ao servidor
+nErr := oServer:smtpConnect()
+if nErr <> 0
+  conOut("[ERROR]Falha ao conectar: " + oServer:getErrorString(nErr))
+  oServer:smtpDisconnect()
+  return .F.
+endif
+                      
+// Realiza autenticacao no servidor
+nErr := oServer:smtpAuth(cUser, cPass)
+if nErr <> 0
+  conOut("[ERROR]Falha ao autenticar: " + oServer:getErrorString(nErr))
+  oServer:smtpDisconnect()
+  return .F.
+endif
+
+
+// Cria uma nova mensagem (TMailMessage)
+oMessage := tMailMessage():new()
+oMessage:clear()
+oMessage:cFrom    := cUser //Conta que será visualizando como sendo o emissor do e-mail.
+oMessage:cTo      := cDest //Getmv('MV_EMLFOR') //Aqui colocará separado por virgula os e-mails que receberam a mensagem, criei um parametro para ficar mais flexivel.
+oMessage:cCC      := ""
+oMessage:cBCC     := ""
+oMessage:cSubject := "Notificação Automática - Protheus - Bloqueio por alçada de Compras"
+
+//Aqui será criado a variável cBody com o corpo do e-mail
+      	cBody :=   '<html>' 		
+      	cBody +=   '<head>'
+      	cBody +=   '<meta http-equiv="Content-Type" content="text/html charset=ISO-8859-1">' 	
+      	cBody +=   '</head>' 
+      	cBody +=   '<body>'  	
+      	cBody +=   '<div marginheight="0" marginwidth="0">'  	
+      	cBody +=   '<table border="0" cellpadding="0" cellspacing="0">'  	
+      	cBody +=   '<tbody>' 
+      	cBody +=   '<tr><td><font face="arial" size="2"><br><center><b>NOTIFICAÇÃO AUTOMÁTICA</b></center></br><p></font></td></tr>' 	
+      	cBody +=   '<tr><td><p><font face="arial" size="2">Prezado Gestor.</p>' 
+      	cBody +=   '<p>Este e-mail tem o intuito de avisá-lo que o pedido de compras abaixo esta aguardando liberação por favor verificar.:</p>'
+        cBody +=   '<p>Pedido de Compra Nº: <b>'+_cNumPC+'</b></p>' 	 	
+	      cBody +=   '<p><b></b></p></font>'
+	      cBody +=   '<br>'
+	      cBody +=   '</td></tr></table>'
+      	cBody +=   '<br>' 	
+      	cBody +=   '<br>' 	
+      	cBody +=   '<tr><td>'      
+      	cBody +=   '<hr>' 
+        cBody +=   '<font face = "arial" size="2" color="#D3D3D3">Cadastrado por: </font>' + cUsername + '<br>'
+        cBody +=   '<font face = "arial" size="2" color="#D3D3D3">Enviado do Computador: </font>' + cRemoteComputer + '<br>'
+        cBody +=   '<font face = "arial" size="2" color="#D3D3D3">Com endereço IP: </font>' + cRemoteip + '<br>'
+        cBody +=   '<font face = "arial" size="2" color="#D3D3D3">Enviado Dia: </font>'  + DtoC(dDataBase) + ' as ' + Time() + '  horas. <br>'        
+        cBody +=   '<hr><br>' 
+        cBody +=   '<font face = "arial" size="2"><center>***Este é um e-mail automático enviado pelo Protheus. Favor não responder.***</center></font>' 
+        cBody +=   '</body>'
+      	cBody +=   '</html>'
+
+oMessage:cBody    :=  cBody      	
+                                        
+// Envia a mensagem
+nErr := oMessage:send(oServer)
+if nErr <> 0
+  conout("[ERROR]Falha ao enviar: " + oServer:getErrorString(nErr))
+  oServer:smtpDisconnect()
+  return .F.
+endif
+
+// Disconecta do Servidor
+oServer:smtpDisconnect()
+
+
+return .T.
